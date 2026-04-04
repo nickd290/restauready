@@ -1,4 +1,4 @@
-import { SavedItem, Product, CategoryProgress } from "@/types";
+import { SavedItem, Product, CategoryProgress, StyleMemory } from "@/types";
 
 const SAVED_KEY = "restauready_saved";
 const PROGRESS_KEY = "restauready_progress";
@@ -22,6 +22,8 @@ export function saveItem(product: Product, categorySlug: string): void {
   if (exists) return;
   items.push({ product, categorySlug, savedAt: new Date().toISOString() });
   localStorage.setItem(SAVED_KEY, JSON.stringify(items));
+  // Update style memory when saving
+  updateStyleMemory(product);
 }
 
 export function removeSavedItem(productId: string): void {
@@ -93,6 +95,68 @@ export function cacheSearchResults(
     SEARCH_CACHE_PREFIX + categorySlug,
     JSON.stringify({ products, timestamp: Date.now(), isMock })
   );
+}
+
+// Style Memory — learns from saved products to maintain theme consistency
+const STYLE_MEMORY_KEY = "restauready_style_memory";
+
+export function getStyleMemory(): StyleMemory {
+  if (typeof window === "undefined")
+    return { keywords: [], materials: [], colors: [], vibes: [], savedProductNames: [] };
+  const raw = localStorage.getItem(STYLE_MEMORY_KEY);
+  if (!raw)
+    return { keywords: [], materials: [], colors: [], vibes: [], savedProductNames: [] };
+  try {
+    return JSON.parse(raw) as StyleMemory;
+  } catch {
+    return { keywords: [], materials: [], colors: [], vibes: [], savedProductNames: [] };
+  }
+}
+
+export function updateStyleMemory(product: Product): void {
+  const mem = getStyleMemory();
+  // Extract style signals from the product
+  const text = `${product.name} ${product.description} ${product.fitReason} ${product.specs.join(" ")}`.toLowerCase();
+
+  // Materials
+  const materialWords = ["leather", "brass", "copper", "wood", "oak", "walnut", "marble", "velvet", "steel", "iron", "glass", "concrete", "reclaimed", "tufted", "upholstered", "linen", "wicker", "rattan", "chrome", "gold", "bronze", "ceramic", "porcelain", "stone", "slate", "terrazzo", "bamboo", "mahogany", "cherry", "pine", "metal", "wrought iron", "stainless"];
+  materialWords.forEach((m) => {
+    if (text.includes(m) && !mem.materials.includes(m)) mem.materials.push(m);
+  });
+
+  // Colors
+  const colorWords = ["black", "dark", "brown", "tan", "cognac", "burgundy", "navy", "forest green", "charcoal", "espresso", "mocha", "cream", "ivory", "white", "natural", "gray", "grey", "amber", "rust", "olive", "sage", "terracotta", "wine", "deep red", "midnight", "gold"];
+  colorWords.forEach((c) => {
+    if (text.includes(c) && !mem.colors.includes(c)) mem.colors.push(c);
+  });
+
+  // Vibe/aesthetic keywords
+  const vibeWords = ["speakeasy", "vintage", "retro", "industrial", "rustic", "modern", "minimalist", "art deco", "mid-century", "edison", "prohibition", "classic", "elegant", "upscale", "cozy", "intimate", "moody", "dim", "ambient", "warm", "sophisticated", "traditional", "contemporary", "luxurious", "handcrafted", "artisan"];
+  vibeWords.forEach((v) => {
+    if (text.includes(v) && !mem.vibes.includes(v)) mem.vibes.push(v);
+  });
+
+  // Track product names for context
+  if (!mem.savedProductNames.includes(product.name)) {
+    mem.savedProductNames.push(product.name);
+    // Keep only last 20
+    if (mem.savedProductNames.length > 20) {
+      mem.savedProductNames = mem.savedProductNames.slice(-20);
+    }
+  }
+
+  localStorage.setItem(STYLE_MEMORY_KEY, JSON.stringify(mem));
+}
+
+export function getStyleContext(): string {
+  const mem = getStyleMemory();
+  const parts: string[] = [];
+  if (mem.materials.length > 0) parts.push(`Materials they gravitate toward: ${mem.materials.join(", ")}`);
+  if (mem.colors.length > 0) parts.push(`Color palette preferences: ${mem.colors.join(", ")}`);
+  if (mem.vibes.length > 0) parts.push(`Aesthetic vibes: ${mem.vibes.join(", ")}`);
+  if (mem.savedProductNames.length > 0) parts.push(`Previously saved products include: ${mem.savedProductNames.slice(-8).join(", ")}`);
+  if (parts.length === 0) return "";
+  return `\n\nSTYLE MEMORY — This owner has already saved items in other categories. Based on their choices, maintain consistency with these preferences:\n${parts.join("\n")}`;
 }
 
 // Data export

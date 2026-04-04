@@ -12,6 +12,8 @@ import {
   getCachedSearch,
   cacheSearchResults,
   getSavedByCategory,
+  getStyleContext,
+  getStyleMemory,
 } from "@/lib/saved";
 import {
   getCategoryBySlug,
@@ -102,6 +104,7 @@ export default function CategoryPage({
             categoryDescription,
             profile: p,
             page: pageNum,
+            styleContext: getStyleContext(),
           }),
         });
 
@@ -263,6 +266,29 @@ export default function CategoryPage({
       </div>
 
       {/* Last updated (#13) */}
+      {/* Style Memory indicator */}
+      {!loading && (() => {
+        const mem = getStyleMemory();
+        const hasMemory = mem.materials.length > 0 || mem.vibes.length > 0 || mem.colors.length > 0;
+        if (!hasMemory) return null;
+        const tags = [...mem.vibes.slice(0, 3), ...mem.materials.slice(0, 3), ...mem.colors.slice(0, 2)];
+        return (
+          <div className="bg-copper/5 border border-copper/10 rounded-2xl px-4 py-3 mb-4">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-copper/60">Style Memory Active</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {tags.map((t) => (
+                <span key={t} className="text-[10px] bg-copper/10 text-copper/70 px-2 py-0.5 rounded-full">{t}</span>
+              ))}
+            </div>
+            <p className="text-[10px] text-ivory/25 mt-1.5">
+              Results are influenced by your saved items across other categories
+            </p>
+          </div>
+        );
+      })()}
+
       {cacheTime && !loading && (
         <p className="text-xs text-ivory/25 mb-6">
           Results from {timeAgo(cacheTime)}

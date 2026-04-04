@@ -2,12 +2,13 @@ import { NextRequest } from "next/server";
 import { Product, RestaurantProfile } from "@/types";
 
 export async function POST(request: NextRequest) {
-  const { categoryName, categoryDescription, profile, page = 1 } =
+  const { categoryName, categoryDescription, profile, page = 1, styleContext = "" } =
     (await request.json()) as {
       categoryName: string;
       categoryDescription: string;
       profile: RestaurantProfile;
       page?: number;
+      styleContext?: string;
     };
 
   const capacityLabel =
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
 
   const prompt = `Find 10 specific commercial restaurant ${categoryName} products available for purchase online.
 Context: This is for "${profile.name}", a ${profile.cuisineType} restaurant with ${capacityLabel} capacity, ${profile.style} aesthetic, and a ${budgetLabel} budget.
-Category details: ${categoryDescription}${pageContext}
+Category details: ${categoryDescription}${pageContext}${styleContext}
 
 For each product, provide:
 1. Product name (specific brand and model)

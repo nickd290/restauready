@@ -36,3 +36,21 @@ export interface Category {
   icon: string;
   description: string;
 }
+
+export interface StyleMemory {
+  keywords: string[];
+  materials: string[];
+  colors: string[];
+  vibes: string[];
+  savedProductNames: string[];
+}
+
+export interface ConceptPreset {
+  id: string;
+  name: string;
+  tagline: string;
+  cuisineType: string;
+  style: string;
+  budgetTier: "budget" | "midrange" | "premium";
+  styleKeywords: string[];
+}
