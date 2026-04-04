@@ -47,15 +47,15 @@ export default function SavedPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 md:py-12 pb-24 md:pb-12">
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-amber mb-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-copper mb-2">
           -- Saved Items
         </p>
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-          <span className="text-cream">Your </span>
-          <span className="text-amber">Shortlist</span>
+          <span className="text-ivory">Your </span>
+          <span className="text-copper">Shortlist</span>
         </h1>
         <div className="flex items-center gap-4 mt-2">
-          <p className="text-cream/50">
+          <p className="text-ivory/50">
             {items.length} item{items.length !== 1 ? "s" : ""} across{" "}
             {categoryKeys.length} categor
             {categoryKeys.length !== 1 ? "ies" : "y"}
@@ -82,9 +82,9 @@ export default function SavedPage() {
                 minimumFractionDigits: 0,
               }).format(n);
             return (
-              <span className="text-sm text-amber font-medium">
+              <span className="text-sm text-copper font-medium">
                 Est. {fmt(low)}
-                {low !== high && <span className="text-cream/30"> &ndash; {fmt(high)}</span>}
+                {low !== high && <span className="text-ivory/30"> &ndash; {fmt(high)}</span>}
               </span>
             );
           })()}
@@ -92,17 +92,17 @@ export default function SavedPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="bg-surface rounded-xl p-12 text-center">
+        <div className="bg-surface rounded-2xl p-12 text-center">
           <div className="text-4xl mb-4">🔖</div>
-          <h2 className="text-xl font-semibold text-cream mb-2">
+          <h2 className="text-xl font-semibold text-ivory mb-2">
             Nothing saved yet
           </h2>
-          <p className="text-cream/40 mb-6">
+          <p className="text-ivory/40 mb-6">
             Browse categories and save products you like.
           </p>
           <Link
             href="/browse"
-            className="inline-block bg-amber text-charcoal font-semibold px-6 py-3 rounded-lg hover:bg-amber-light transition-colors"
+            className="inline-block bg-copper text-ink font-semibold px-6 py-3 rounded-lg hover:bg-copper-light transition-colors"
           >
             Start Browsing
           </Link>
@@ -116,8 +116,8 @@ export default function SavedPage() {
                 onClick={() => setFilter("all")}
                 className={`text-sm px-3 py-1.5 rounded-full transition-all ${
                   filter === "all"
-                    ? "bg-amber text-charcoal"
-                    : "bg-surface text-cream/50 hover:text-cream"
+                    ? "bg-copper text-ink"
+                    : "bg-surface text-ivory/50 hover:text-ivory"
                 }`}
               >
                 All ({items.length})
@@ -130,8 +130,8 @@ export default function SavedPage() {
                     onClick={() => setFilter(slug)}
                     className={`text-sm px-3 py-1.5 rounded-full transition-all ${
                       filter === slug
-                        ? "bg-amber text-charcoal"
-                        : "bg-surface text-cream/50 hover:text-cream"
+                        ? "bg-copper text-ink"
+                        : "bg-surface text-ivory/50 hover:text-ivory"
                     }`}
                   >
                     {cat?.icon} {cat?.name} ({grouped[slug].length})
@@ -149,10 +149,10 @@ export default function SavedPage() {
               <div key={slug} className="mb-8">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">{cat?.icon}</span>
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-cream/60">
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-ivory/60">
                     {cat?.name}
                   </h2>
-                  <span className="text-xs text-cream/30">
+                  <span className="text-xs text-ivory/30">
                     ({categoryItems.length})
                   </span>
                 </div>
@@ -160,17 +160,17 @@ export default function SavedPage() {
                   {categoryItems.map((item) => (
                     <div
                       key={item.product.id}
-                      className="bg-surface border border-charcoal-lighter rounded-xl p-4 flex items-start gap-4"
+                      className="bg-surface border border-ink-lighter/20 rounded-2xl p-4 flex items-start gap-4"
                     >
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-cream text-sm">
+                        <h3 className="font-semibold text-ivory text-sm">
                           {item.product.name}
                         </h3>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-amber font-bold text-sm">
+                          <span className="text-copper font-bold text-sm">
                             {item.product.price}
                           </span>
-                          <span className="text-xs text-cream/30">
+                          <span className="text-xs text-ivory/30">
                             {item.product.retailer}
                           </span>
                         </div>
@@ -179,7 +179,7 @@ export default function SavedPage() {
                             href={item.product.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-amber/60 hover:text-amber mt-1 inline-block"
+                            className="text-xs text-copper/60 hover:text-copper mt-1 inline-block"
                           >
                             View product
                           </a>
@@ -187,7 +187,7 @@ export default function SavedPage() {
                       </div>
                       <button
                         onClick={() => handleRemove(item.product.id)}
-                        className="text-cream/20 hover:text-red-400 transition-colors shrink-0"
+                        className="text-ivory/20 hover:text-red-400 transition-colors shrink-0"
                         title="Remove"
                       >
                         <svg

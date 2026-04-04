@@ -37,16 +37,18 @@ export default function Dashboard() {
   const percentage = Math.round((doneCount / totalCategories) * 100);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 md:py-12 pb-24 md:pb-12">
-      {/* Hero */}
-      <div className="mb-10">
-        <p className="text-xs font-semibold uppercase tracking-widest text-amber mb-2">
-          -- Dashboard
-        </p>
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-1">
-          <span className="text-cream">{profile.name}</span>
+    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-16 pb-28 md:pb-16">
+      {/* Hero section */}
+      <div className="animate-fade-up mb-14">
+        <div className="label-editorial mb-4">Dashboard</div>
+        <h1
+          className="text-4xl md:text-6xl tracking-tight mb-3"
+          style={{ fontFamily: "var(--font-dm-serif)" }}
+        >
+          {profile.name}
         </h1>
-        <p className="text-cream/50">
+        <div className="rule-copper w-24 mb-4" />
+        <p className="text-ivory/40 text-sm tracking-wide">
           {profile.cuisineType} &middot; {profile.style} &middot;{" "}
           {profile.seatingCapacity === "small"
             ? "Under 30 seats"
@@ -62,57 +64,94 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Progress Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <StatCard label="Total Categories" value={totalCategories.toString()} />
-        <StatCard label="Completed" value={doneCount.toString()} accent />
-        <StatCard label="In Progress" value={inProgressCount.toString()} />
-        <StatCard label="Items Saved" value={savedCount.toString()} />
+      {/* Stats row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-14">
+        {[
+          { label: "Categories", value: totalCategories, delay: "delay-1" },
+          { label: "Completed", value: doneCount, accent: true, delay: "delay-2" },
+          { label: "In Progress", value: inProgressCount, delay: "delay-3" },
+          { label: "Items Saved", value: savedCount, delay: "delay-4" },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className={`animate-scale-in ${stat.delay} bg-surface border border-ink-lighter/30 rounded-2xl p-5 md:p-6 hover-lift`}
+          >
+            <div className="text-[10px] font-bold tracking-widest uppercase text-ivory/30 mb-2">
+              {stat.label}
+            </div>
+            <div
+              className={`text-3xl md:text-4xl font-light tracking-tight ${
+                stat.accent ? "text-copper" : "text-ivory"
+              }`}
+              style={{ fontFamily: "var(--font-dm-serif)" }}
+            >
+              {stat.value}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Progress Bar */}
-      <div className="bg-surface rounded-xl p-6 mb-10">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-cream/60">
-            Sourcing Progress
-          </span>
-          <span className="text-sm font-bold text-amber">{percentage}%</span>
-        </div>
-        <div className="h-3 bg-charcoal rounded-full overflow-hidden">
+      {/* Progress section */}
+      <div className="animate-fade-up delay-3 bg-surface border border-ink-lighter/30 rounded-2xl p-6 md:p-8 mb-14">
+        <div className="flex items-end justify-between mb-5">
+          <div>
+            <div className="label-editorial mb-2">Sourcing Progress</div>
+            <p className="text-ivory/35 text-xs">
+              {doneCount} of {totalCategories} categories fully sourced
+            </p>
+          </div>
           <div
-            className="h-full bg-gradient-to-r from-amber-dark to-amber rounded-full transition-all duration-500"
-            style={{ width: `${percentage}%` }}
+            className="text-3xl font-light text-copper"
+            style={{ fontFamily: "var(--font-dm-serif)" }}
+          >
+            {percentage}%
+          </div>
+        </div>
+        <div className="h-2 bg-ink rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-700 ease-out"
+            style={{
+              width: `${Math.max(percentage, 2)}%`,
+              background:
+                "linear-gradient(90deg, var(--color-copper-dark), var(--color-copper), var(--color-copper-light))",
+            }}
           />
         </div>
-        <p className="text-xs text-cream/40 mt-2">
-          {doneCount} of {totalCategories} categories fully sourced
-        </p>
       </div>
 
-      {/* Department Quick Links */}
-      <div className="mb-10">
-        <p className="text-xs font-semibold uppercase tracking-widest text-amber mb-4">
-          -- Departments
-        </p>
+      {/* Departments */}
+      <div className="mb-14">
+        <div className="label-editorial mb-5">Departments</div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {departments.map((dept) => {
+          {departments.map((dept, i) => {
             const deptCategories = categories.filter(
               (c) => c.department === dept
             );
             const deptDone = deptCategories.filter(
               (c) => progress[c.slug] === "done"
             ).length;
+            const deptProgress = Math.round(
+              (deptDone / deptCategories.length) * 100
+            );
             return (
               <Link
                 key={dept}
                 href="/browse"
-                className="bg-surface hover:bg-surface-hover rounded-xl p-4 transition-all group"
+                className={`animate-scale-in delay-${i + 1} bg-surface border border-ink-lighter/20 rounded-2xl p-4 md:p-5 transition-all group hover-lift`}
               >
-                <div className="text-sm font-semibold text-cream group-hover:text-amber transition-colors">
+                <div className="text-sm font-semibold text-ivory group-hover:text-copper transition-colors mb-2">
                   {dept}
                 </div>
-                <div className="text-xs text-cream/40 mt-1">
-                  {deptDone}/{deptCategories.length} done
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1 bg-ink rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-copper rounded-full"
+                      style={{ width: `${deptProgress}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-ivory/30 font-mono">
+                    {deptDone}/{deptCategories.length}
+                  </span>
                 </div>
               </Link>
             );
@@ -120,8 +159,76 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Data Backup (#5) */}
-      <div className="mb-10">
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        <Link
+          href="/browse"
+          className="animate-fade-up delay-5 group relative overflow-hidden rounded-2xl border border-copper/20 p-6 md:p-8 hover-lift"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(198,125,74,0.08) 0%, transparent 60%)",
+          }}
+        >
+          <div
+            className="text-2xl md:text-3xl text-copper mb-3"
+            style={{ fontFamily: "var(--font-dm-serif)" }}
+          >
+            Browse
+          </div>
+          <p className="text-sm text-ivory/40 leading-relaxed">
+            Find products across {totalCategories} categories, tailored to your
+            restaurant
+          </p>
+          <div className="absolute top-6 right-6 text-copper/20 group-hover:text-copper/40 transition-colors">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
+              />
+            </svg>
+          </div>
+        </Link>
+
+        <Link
+          href="/saved"
+          className="animate-fade-up delay-6 group bg-surface border border-ink-lighter/20 rounded-2xl p-6 md:p-8 hover-lift"
+        >
+          <div
+            className="text-2xl md:text-3xl text-ivory mb-3"
+            style={{ fontFamily: "var(--font-dm-serif)" }}
+          >
+            Saved
+          </div>
+          <p className="text-sm text-ivory/40 leading-relaxed">
+            {savedCount} item{savedCount !== 1 ? "s" : ""} on your shortlist
+          </p>
+        </Link>
+
+        <Link
+          href="/budget"
+          className="animate-fade-up delay-7 group bg-surface border border-ink-lighter/20 rounded-2xl p-6 md:p-8 hover-lift"
+        >
+          <div
+            className="text-2xl md:text-3xl text-ivory mb-3"
+            style={{ fontFamily: "var(--font-dm-serif)" }}
+          >
+            Budget
+          </div>
+          <p className="text-sm text-ivory/40 leading-relaxed">
+            Track your estimated spend across all categories
+          </p>
+        </Link>
+      </div>
+
+      {/* Backup */}
+      <div className="animate-fade-in delay-8 flex items-center gap-3 pt-6 border-t border-ink-lighter/20">
         <button
           onClick={() => {
             const data = exportAllData();
@@ -133,74 +240,13 @@ export default function Dashboard() {
             a.click();
             URL.revokeObjectURL(url);
           }}
-          className="text-xs text-cream/30 hover:text-amber border border-charcoal-lighter hover:border-amber/30 px-3 py-2 rounded-lg transition-all"
+          className="text-xs text-ivory/25 hover:text-copper border border-ink-lighter/30 hover:border-copper/30 px-4 py-2 rounded-lg transition-all"
         >
-          Download Backup (JSON)
+          Download Backup
         </button>
-        <span className="text-xs text-cream/20 ml-2">
-          Your data is only saved on this device
+        <span className="text-[10px] text-ivory/15 tracking-wide">
+          Data is stored locally on this device
         </span>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link
-          href="/browse"
-          className="bg-amber/10 border border-amber/20 rounded-xl p-5 hover:bg-amber/15 transition-all group"
-        >
-          <div className="text-2xl mb-2">🔍</div>
-          <div className="font-semibold text-amber group-hover:text-amber-light">
-            Browse Categories
-          </div>
-          <div className="text-sm text-cream/40 mt-1">
-            Find products by department
-          </div>
-        </Link>
-        <Link
-          href="/saved"
-          className="bg-surface border border-charcoal-lighter rounded-xl p-5 hover:bg-surface-hover transition-all group"
-        >
-          <div className="text-2xl mb-2">💾</div>
-          <div className="font-semibold text-cream group-hover:text-amber">
-            Saved Items
-          </div>
-          <div className="text-sm text-cream/40 mt-1">
-            {savedCount} items saved
-          </div>
-        </Link>
-        <Link
-          href="/budget"
-          className="bg-surface border border-charcoal-lighter rounded-xl p-5 hover:bg-surface-hover transition-all group"
-        >
-          <div className="text-2xl mb-2">💰</div>
-          <div className="font-semibold text-cream group-hover:text-amber">
-            Budget Tracker
-          </div>
-          <div className="text-sm text-cream/40 mt-1">
-            Track your total spend
-          </div>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
-  return (
-    <div className="bg-surface rounded-xl p-4">
-      <div className="text-xs text-cream/40 mb-1">{label}</div>
-      <div
-        className={`text-2xl font-bold ${accent ? "text-amber" : "text-cream"}`}
-      >
-        {value}
       </div>
     </div>
   );

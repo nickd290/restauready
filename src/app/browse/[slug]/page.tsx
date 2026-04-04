@@ -188,27 +188,27 @@ export default function CategoryPage({
     <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 md:py-12 pb-24 md:pb-12">
       {/* Done Toast (#8) */}
       {doneToast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-900/90 text-green-300 px-6 py-3 rounded-xl shadow-lg text-sm font-medium animate-[fadeIn_0.2s_ease-out]">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-900/90 text-green-300 px-6 py-3 rounded-2xl shadow-lg text-sm font-medium animate-[fadeIn_0.2s_ease-out]">
           {category.name} marked as complete
         </div>
       )}
 
       {/* Mock data banner (#1) */}
       {isMock && !loading && (
-        <div className="bg-amber/10 border border-amber/30 rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
-          <span className="text-amber text-lg">!</span>
+        <div className="bg-copper/10 border border-amber/30 rounded-2xl px-4 py-3 mb-6 flex items-center gap-3">
+          <span className="text-copper text-lg">!</span>
           <div className="flex-1">
-            <p className="text-sm text-amber font-medium">
+            <p className="text-sm text-copper font-medium">
               Showing placeholder products
             </p>
-            <p className="text-xs text-cream/40">
+            <p className="text-xs text-ivory/40">
               Live search unavailable. These are sample products, not real
               listings.
             </p>
           </div>
           <button
             onClick={handleRefresh}
-            className="text-xs text-amber hover:text-amber-light font-medium shrink-0"
+            className="text-xs text-copper hover:text-copper-light font-medium shrink-0"
           >
             Retry
           </button>
@@ -216,12 +216,12 @@ export default function CategoryPage({
       )}
 
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-cream/40 mb-6">
-        <Link href="/browse" className="hover:text-cream transition-colors">
+      <div className="flex items-center gap-2 text-sm text-ivory/40 mb-6">
+        <Link href="/browse" className="hover:text-ivory transition-colors">
           Browse
         </Link>
         <span>/</span>
-        <span className="text-cream/60">{category.name}</span>
+        <span className="text-ivory/60">{category.name}</span>
       </div>
 
       {/* Header */}
@@ -229,13 +229,13 @@ export default function CategoryPage({
         <div>
           <div className="flex items-center gap-3 mb-2">
             <span className="text-3xl">{category.icon}</span>
-            <h1 className="text-2xl md:text-3xl font-bold text-cream">
+            <h1 className="text-2xl md:text-3xl font-bold text-ivory">
               {category.name}
             </h1>
           </div>
-          <p className="text-cream/50">{category.description}</p>
+          <p className="text-ivory/50">{category.description}</p>
           {profile && (
-            <p className="text-xs text-cream/30 mt-2">
+            <p className="text-xs text-ivory/30 mt-2">
               Showing results for: {profile.cuisineType} &middot;{" "}
               {profile.style} &middot;{" "}
               {profile.budgetTier === "budget"
@@ -249,7 +249,7 @@ export default function CategoryPage({
         <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
-            className="text-sm text-cream/40 hover:text-cream border border-charcoal-lighter hover:border-cream/30 rounded-lg px-3 py-2 transition-all"
+            className="text-sm text-ivory/40 hover:text-ivory border border-ink-lighter/20 hover:border-cream/30 rounded-lg px-3 py-2 transition-all"
           >
             Refresh
           </button>
@@ -264,12 +264,12 @@ export default function CategoryPage({
 
       {/* Last updated (#13) */}
       {cacheTime && !loading && (
-        <p className="text-xs text-cream/25 mb-6">
+        <p className="text-xs text-ivory/25 mb-6">
           Results from {timeAgo(cacheTime)}
           {Date.now() - cacheTime > 1800000 && (
             <button
               onClick={handleRefresh}
-              className="text-amber/50 hover:text-amber ml-2"
+              className="text-copper/50 hover:text-copper ml-2"
             >
               Refresh for latest
             </button>
@@ -281,7 +281,7 @@ export default function CategoryPage({
       {loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-surface rounded-xl p-5">
+            <div key={i} className="bg-surface rounded-2xl p-5">
               <div className="skeleton h-5 w-3/4 rounded mb-3" />
               <div className="skeleton h-4 w-full rounded mb-2" />
               <div className="skeleton h-4 w-2/3 rounded mb-4" />
@@ -296,11 +296,11 @@ export default function CategoryPage({
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-900/20 border border-red-900/40 rounded-xl p-6 text-center">
+        <div className="bg-red-900/20 border border-red-900/40 rounded-2xl p-6 text-center">
           <p className="text-red-400">{error}</p>
           <button
             onClick={handleRefresh}
-            className="mt-3 text-sm text-amber hover:text-amber-light"
+            className="mt-3 text-sm text-copper hover:text-copper-light"
           >
             Try Again
           </button>
@@ -314,15 +314,15 @@ export default function CategoryPage({
             {products.map((product) => (
               <div
                 key={product.id}
-                className="bg-surface border border-charcoal-lighter rounded-xl p-5 hover:border-charcoal-lighter/80 transition-all"
+                className="bg-surface border border-ink-lighter/20 rounded-2xl p-5 hover:border-ink-lighter/20/80 transition-all"
               >
                 {/* Save button row — mobile friendly (#12) */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-amber">
+                    <span className="text-lg font-bold text-copper">
                       {product.price}
                     </span>
-                    <span className="text-xs text-cream/30">
+                    <span className="text-xs text-ivory/30">
                       via {product.retailer}
                     </span>
                   </div>
@@ -330,8 +330,8 @@ export default function CategoryPage({
                     onClick={() => toggleSave(product)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       savedIds.has(product.id)
-                        ? "bg-amber/20 text-amber"
-                        : "bg-charcoal-lighter/50 text-cream/40 hover:bg-charcoal-lighter hover:text-cream"
+                        ? "bg-copper/20 text-copper"
+                        : "bg-ink-lighter/50 text-ivory/40 hover:bg-ink-lighter hover:text-ivory"
                     }`}
                   >
                     {savedIds.has(product.id) ? "Saved" : "Save"}
@@ -339,17 +339,17 @@ export default function CategoryPage({
                 </div>
 
                 {/* Product name — larger (#11) */}
-                <h3 className="text-base font-bold text-cream leading-snug mb-2">
+                <h3 className="text-base font-bold text-ivory leading-snug mb-2">
                   {product.name}
                 </h3>
 
-                <p className="text-sm text-cream/45 mb-3 line-clamp-2">
+                <p className="text-sm text-ivory/45 mb-3 line-clamp-2">
                   {product.description}
                 </p>
 
                 {product.fitReason && (
-                  <div className="bg-amber/5 border border-amber/10 rounded-lg p-3 mb-3">
-                    <p className="text-xs text-amber/80">
+                  <div className="bg-copper/5 border border-amber/10 rounded-lg p-3 mb-3">
+                    <p className="text-xs text-copper/80">
                       <span className="font-semibold">Why this fits:</span>{" "}
                       {product.fitReason}
                     </p>
@@ -361,7 +361,7 @@ export default function CategoryPage({
                     {product.specs.map((spec, i) => (
                       <span
                         key={i}
-                        className="text-xs bg-charcoal-lighter/50 text-cream/50 px-2 py-1 rounded-full"
+                        className="text-xs bg-ink-lighter/50 text-ivory/50 px-2 py-1 rounded-full"
                       >
                         {spec}
                       </span>
@@ -376,7 +376,7 @@ export default function CategoryPage({
                       href={product.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-amber hover:text-amber-light transition-colors"
+                      className="inline-flex items-center gap-1 text-sm text-copper hover:text-copper-light transition-colors"
                       onMouseEnter={() => validateUrl(product.url)}
                     >
                       View on {product.retailer}
@@ -413,11 +413,11 @@ export default function CategoryPage({
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="bg-surface hover:bg-surface-hover border border-charcoal-lighter hover:border-amber/30 text-cream/60 hover:text-cream px-6 py-3 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+              className="bg-surface hover:bg-surface-hover border border-ink-lighter/20 hover:border-amber/30 text-ivory/60 hover:text-ivory px-6 py-3 rounded-2xl text-sm font-medium transition-all disabled:opacity-50"
             >
               {loadingMore ? "Loading more..." : `Load More Products (Page ${page + 1})`}
             </button>
-            <p className="text-xs text-cream/25 mt-2">
+            <p className="text-xs text-ivory/25 mt-2">
               Showing {products.length} products
             </p>
           </div>
@@ -427,7 +427,7 @@ export default function CategoryPage({
       {/* Saved count footer */}
       {savedIds.size > 0 && (
         <div className="mt-4 text-center">
-          <p className="text-sm text-cream/40">
+          <p className="text-sm text-ivory/40">
             {savedIds.size} item{savedIds.size !== 1 ? "s" : ""} saved in this
             category
           </p>
@@ -435,11 +435,11 @@ export default function CategoryPage({
       )}
 
       {/* Category Navigation (#7) */}
-      <div className="flex items-center justify-between mt-8 pt-6 border-t border-charcoal-lighter">
+      <div className="flex items-center justify-between mt-8 pt-6 border-t border-ink-lighter/20">
         {neighbors.prev ? (
           <Link
             href={`/browse/${neighbors.prev.slug}`}
-            className="flex items-center gap-2 text-sm text-cream/40 hover:text-cream transition-colors"
+            className="flex items-center gap-2 text-sm text-ivory/40 hover:text-ivory transition-colors"
           >
             <svg
               className="w-4 h-4"
@@ -462,7 +462,7 @@ export default function CategoryPage({
         {neighbors.next ? (
           <Link
             href={`/browse/${neighbors.next.slug}`}
-            className="flex items-center gap-2 text-sm text-cream/40 hover:text-cream transition-colors"
+            className="flex items-center gap-2 text-sm text-ivory/40 hover:text-ivory transition-colors"
           >
             {neighbors.next.name} {neighbors.next.icon}
             <svg
@@ -487,13 +487,13 @@ export default function CategoryPage({
       {/* Related categories (#14) */}
       {related.length > 0 && (
         <div className="mt-6">
-          <p className="text-xs text-cream/25 mb-2">Also in {category.department}:</p>
+          <p className="text-xs text-ivory/25 mb-2">Also in {category.department}:</p>
           <div className="flex flex-wrap gap-2">
             {related.map((r) => (
               <Link
                 key={r.slug}
                 href={`/browse/${r.slug}`}
-                className="text-xs bg-surface hover:bg-surface-hover text-cream/50 hover:text-cream px-3 py-1.5 rounded-full transition-all"
+                className="text-xs bg-surface hover:bg-surface-hover text-ivory/50 hover:text-ivory px-3 py-1.5 rounded-full transition-all"
               >
                 {r.icon} {r.name}
               </Link>

@@ -131,30 +131,30 @@ export default function BudgetPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 md:py-12 pb-24 md:pb-12">
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-amber mb-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-copper mb-2">
           -- Budget Tracker
         </p>
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-          <span className="text-cream">Estimated </span>
-          <span className="text-amber">Budget</span>
+          <span className="text-ivory">Estimated </span>
+          <span className="text-copper">Budget</span>
         </h1>
-        <p className="text-cream/50 mt-2">
+        <p className="text-ivory/50 mt-2">
           Based on {items.length} saved item{items.length !== 1 ? "s" : ""}
         </p>
       </div>
 
       {items.length === 0 ? (
-        <div className="bg-surface rounded-xl p-12 text-center">
+        <div className="bg-surface rounded-2xl p-12 text-center">
           <div className="text-4xl mb-4">money</div>
-          <h2 className="text-xl font-semibold text-cream mb-2">
+          <h2 className="text-xl font-semibold text-ivory mb-2">
             No items saved yet
           </h2>
-          <p className="text-cream/40 mb-6">
+          <p className="text-ivory/40 mb-6">
             Save products to start tracking your budget.
           </p>
           <Link
             href="/browse"
-            className="inline-block bg-amber text-charcoal font-semibold px-6 py-3 rounded-lg hover:bg-amber-light transition-colors"
+            className="inline-block bg-copper text-ink font-semibold px-6 py-3 rounded-lg hover:bg-copper-light transition-colors"
           >
             Start Browsing
           </Link>
@@ -162,28 +162,28 @@ export default function BudgetPage() {
       ) : (
         <>
           {/* Total Summary */}
-          <div className="bg-surface rounded-xl p-6 mb-4">
+          <div className="bg-surface rounded-2xl p-6 mb-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-cream/40">Estimated Total</span>
+              <span className="text-sm text-ivory/40">Estimated Total</span>
               {/* Export CSV (#10) */}
               <button
                 onClick={() =>
                   exportCSV(categoryBreakdown, totalLow, totalHigh, items.length)
                 }
-                className="text-xs text-cream/30 hover:text-amber border border-charcoal-lighter hover:border-amber/30 px-3 py-1.5 rounded-lg transition-all"
+                className="text-xs text-ivory/30 hover:text-copper border border-ink-lighter/20 hover:border-amber/30 px-3 py-1.5 rounded-lg transition-all"
               >
                 Export CSV
               </button>
             </div>
-            <div className="text-3xl md:text-4xl font-bold text-amber">
+            <div className="text-3xl md:text-4xl font-bold text-copper">
               {formatCurrency(totalLow)}{" "}
               {totalLow !== totalHigh && (
-                <span className="text-cream/30 text-xl">
+                <span className="text-ivory/30 text-xl">
                   &ndash; {formatCurrency(totalHigh)}
                 </span>
               )}
             </div>
-            <div className="text-xs text-cream/30 mt-2">
+            <div className="text-xs text-ivory/30 mt-2">
               Based on listed prices. Actual costs may vary with shipping, tax,
               and bulk discounts.
             </div>
@@ -191,8 +191,8 @@ export default function BudgetPage() {
 
           {/* Unparseable warning (#2) */}
           {unparseableCount > 0 && (
-            <div className="bg-amber/5 border border-amber/20 rounded-xl px-4 py-3 mb-6">
-              <p className="text-sm text-amber/70">
+            <div className="bg-copper/5 border border-amber/20 rounded-2xl px-4 py-3 mb-6">
+              <p className="text-sm text-copper/70">
                 {unparseableCount} item{unparseableCount !== 1 ? "s" : ""}{" "}
                 {unparseableCount !== 1 ? "don't have" : "doesn't have"}{" "}
                 parseable prices (marked &ldquo;Call for quote&rdquo; or
@@ -203,7 +203,7 @@ export default function BudgetPage() {
 
           {/* Category Breakdown */}
           <div className="mb-6">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-amber/70 mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-copper/70 mb-4">
               -- By Category
             </h2>
             <div className="space-y-3">
@@ -216,37 +216,37 @@ export default function BudgetPage() {
                   <Link
                     key={cat.slug}
                     href={`/browse/${cat.slug}`}
-                    className="block bg-surface border border-charcoal-lighter rounded-xl p-4 hover:border-amber/20 transition-all"
+                    className="block bg-surface border border-ink-lighter/20 rounded-2xl p-4 hover:border-amber/20 transition-all"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span>{cat.icon}</span>
-                        <span className="text-sm font-medium text-cream">
+                        <span className="text-sm font-medium text-ivory">
                           {cat.name}
                         </span>
-                        <span className="text-xs text-cream/30">
+                        <span className="text-xs text-ivory/30">
                           ({cat.itemCount} item
                           {cat.itemCount !== 1 ? "s" : ""})
                         </span>
                         {cat.unparseable > 0 && (
-                          <span className="text-xs text-amber/50">
+                          <span className="text-xs text-copper/50">
                             ({cat.unparseable} no price)
                           </span>
                         )}
                       </div>
-                      <span className="text-sm font-bold text-amber">
+                      <span className="text-sm font-bold text-copper">
                         {formatCurrency(cat.low)}
                         {cat.low !== cat.high && (
-                          <span className="text-cream/30 font-normal">
+                          <span className="text-ivory/30 font-normal">
                             {" "}
                             &ndash; {formatCurrency(cat.high)}
                           </span>
                         )}
                       </span>
                     </div>
-                    <div className="h-2 bg-charcoal rounded-full overflow-hidden">
+                    <div className="h-2 bg-ink rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-amber-dark to-amber rounded-full"
+                        className="h-full bg-gradient-to-r from-copper-dark to-copper rounded-full"
                         style={{ width: `${widthPercent}%` }}
                       />
                     </div>

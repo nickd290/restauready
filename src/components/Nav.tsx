@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/", label: "Dashboard" },
-  { href: "/browse", label: "Browse" },
-  { href: "/saved", label: "Saved" },
-  { href: "/budget", label: "Budget" },
+  { href: "/", label: "Dashboard", icon: "D" },
+  { href: "/browse", label: "Browse", icon: "B" },
+  { href: "/saved", label: "Saved", icon: "S" },
+  { href: "/budget", label: "Budget", icon: "$" },
 ];
 
 export function Nav() {
@@ -18,28 +18,43 @@ export function Nav() {
   return (
     <>
       {/* Desktop nav */}
-      <nav className="hidden md:flex items-center justify-between px-8 py-4 border-b border-charcoal-light bg-charcoal/80 backdrop-blur-sm sticky top-0 z-50">
-        <Link href="/" className="text-xl font-bold tracking-tight">
-          <span className="text-cream">Restau</span>
-          <span className="text-amber">Ready</span>
+      <nav className="hidden md:flex items-center justify-between px-10 py-5 border-b border-ink-lighter/50 bg-ink/90 backdrop-blur-md sticky top-0 z-50">
+        <Link
+          href="/"
+          className="group flex items-center gap-3"
+        >
+          <div className="w-8 h-8 rounded-full bg-copper flex items-center justify-center text-ink font-bold text-sm">
+            R
+          </div>
+          <span
+            className="text-lg tracking-tight"
+            style={{ fontFamily: "var(--font-dm-serif)" }}
+          >
+            <span className="text-ivory">Restau</span>
+            <span className="text-copper">Ready</span>
+          </span>
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors ${
+              className={`relative text-sm font-medium tracking-wide transition-colors ${
                 pathname === link.href
-                  ? "text-amber"
-                  : "text-cream/60 hover:text-cream"
+                  ? "text-copper"
+                  : "text-ivory/50 hover:text-ivory"
               }`}
             >
               {link.label}
+              {pathname === link.href && (
+                <span className="absolute -bottom-5 left-0 right-0 h-px bg-copper" />
+              )}
             </Link>
           ))}
+          <div className="w-px h-4 bg-ink-lighter" />
           <Link
             href="/setup"
-            className="text-sm text-cream/40 hover:text-cream/60 transition-colors"
+            className="text-sm text-ivory/30 hover:text-ivory/50 transition-colors"
           >
             Settings
           </Link>
@@ -47,25 +62,30 @@ export function Nav() {
       </nav>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-charcoal/95 backdrop-blur-sm border-t border-charcoal-light">
-        <div className="flex justify-around py-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-ink/95 backdrop-blur-md border-t border-ink-lighter/30">
+        <div className="flex justify-around py-2 px-2">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex flex-col items-center gap-1 px-3 py-2 text-xs font-medium transition-colors ${
+              className={`flex flex-col items-center gap-0.5 px-4 py-2.5 rounded-xl transition-all ${
                 pathname === link.href
-                  ? "text-amber"
-                  : "text-cream/50 hover:text-cream"
+                  ? "text-copper bg-copper/8"
+                  : "text-ivory/40 hover:text-ivory/60"
               }`}
             >
-              <span className="text-lg">
-                {link.label === "Dashboard" && "📊"}
-                {link.label === "Browse" && "🔍"}
-                {link.label === "Saved" && "💾"}
-                {link.label === "Budget" && "💰"}
+              <span
+                className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full ${
+                  pathname === link.href
+                    ? "bg-copper text-ink"
+                    : "bg-ink-lighter/50"
+                }`}
+              >
+                {link.icon}
               </span>
-              {link.label}
+              <span className="text-[10px] font-semibold tracking-wide">
+                {link.label}
+              </span>
             </Link>
           ))}
         </div>
