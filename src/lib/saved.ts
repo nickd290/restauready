@@ -59,18 +59,26 @@ export function setCategoryProgress(
 }
 
 // Search cache
-export function getCachedSearch(categorySlug: string): Product[] | null {
+export interface CachedSearchResult {
+  products: Product[];
+  timestamp: number;
+  isMock: boolean;
+}
+
+export function getCachedSearch(
+  categorySlug: string
+): CachedSearchResult | null {
   if (typeof window === "undefined") return null;
   const raw = localStorage.getItem(SEARCH_CACHE_PREFIX + categorySlug);
   if (!raw) return null;
   try {
-    const { products, timestamp } = JSON.parse(raw);
+    const { products, timestamp, isMock } = JSON.parse(raw);
     // Cache for 1 hour
     if (Date.now() - timestamp > 3600000) {
       localStorage.removeItem(SEARCH_CACHE_PREFIX + categorySlug);
       return null;
     }
-    return products as Product[];
+    return { products: products as Product[], timestamp, isMock: !!isMock };
   } catch {
     return null;
   }
@@ -78,10 +86,28 @@ export function getCachedSearch(categorySlug: string): Product[] | null {
 
 export function cacheSearchResults(
   categorySlug: string,
-  products: Product[]
+  products: Product[],
+  isMock: boolean = false
 ): void {
   localStorage.setItem(
     SEARCH_CACHE_PREFIX + categorySlug,
-    JSON.stringify({ products, timestamp: Date.now() })
+    JSON.stringify({ products, timestamp: Date.now(), isMock })
+  );
+}
+
+// Data export
+export function exportAllData(): string {
+  const profile = localStorage.getItem("restauready_profile");
+  const saved = localStorage.getItem(SAVED_KEY);
+  const progress = localStorage.getItem(PROGRESS_KEY);
+  return JSON.stringify(
+    {
+      profile: profile ? JSON.parse(profile) : null,
+      saved: saved ? JSON.parse(saved) : [],
+      progress: progress ? JSON.parse(progress) : {},
+      exportedAt: new Date().toISOString(),
+    },
+    null,
+    2
   );
 }

@@ -60,3 +60,21 @@ export function getCategoryBySlug(slug: string): Category | undefined {
 export function getCategoriesByDepartment(department: string): Category[] {
   return categories.filter((c) => c.department === department);
 }
+
+export function getNeighborCategories(
+  slug: string
+): { prev: Category | null; next: Category | null } {
+  const idx = categories.findIndex((c) => c.slug === slug);
+  return {
+    prev: idx > 0 ? categories[idx - 1] : null,
+    next: idx < categories.length - 1 ? categories[idx + 1] : null,
+  };
+}
+
+export function getRelatedCategories(slug: string, limit = 3): Category[] {
+  const cat = getCategoryBySlug(slug);
+  if (!cat) return [];
+  return categories
+    .filter((c) => c.slug !== slug && c.department === cat.department)
+    .slice(0, limit);
+}

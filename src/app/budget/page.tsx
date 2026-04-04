@@ -8,12 +8,28 @@ import { getProfile } from "@/lib/profile";
 import { getSavedItems } from "@/lib/saved";
 import { getCategoryBySlug } from "@/lib/categories";
 
-function parsePriceRange(price: string): { low: number; high: number } {
+function parsePriceRange(price: string): {
+  low: number;
+  high: number;
+  parseable: boolean;
+} {
+  if (!price) return { low: 0, high: 0, parseable: false };
+  const cleaned = price.toLowerCase();
+  if (
+    cleaned.includes("call") ||
+    cleaned.includes("quote") ||
+    cleaned.includes("contact") ||
+    cleaned.includes("n/a")
+  ) {
+    return { low: 0, high: 0, parseable: false };
+  }
   const numbers = price.match(/[\d,]+\.?\d*/g);
-  if (!numbers || numbers.length === 0) return { low: 0, high: 0 };
+  if (!numbers || numbers.length === 0) return { low: 0, high: 0, parseable: false };
   const parsed = numbers.map((n) => parseFloat(n.replace(/,/g, "")));
-  if (parsed.length === 1) return { low: parsed[0], high: parsed[0] };
-  return { low: Math.min(...parsed), high: Math.max(...parsed) };
+  const valid = parsed.filter((n) => !isNaN(n) && n > 0);
+  if (valid.length === 0) return { low: 0, high: 0, parseable: false };
+  if (valid.length === 1) return { low: valid[0], high: valid[0], parseable: true };
+  return { low: Math.min(...valid), high: Math.max(...valid), parseable: true };
 }
 
 function formatCurrency(n: number): string {
@@ -23,6 +39,33 @@ function formatCurrency(n: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(n);
+}
+
+function exportCSV(
+  categoryBreakdown: { name: string; itemCount: number; low: number; high: number }[],
+  totalLow: number,
+  totalHigh: number,
+  totalItems: number
+) {
+  const rows = [
+    ["Category", "Items", "Low Estimate", "High Estimate"],
+    ...categoryBreakdown.map((cat) => [
+      cat.name,
+      cat.itemCount.toString(),
+      `$${cat.low}`,
+      `$${cat.high}`,
+    ]),
+    ["", "", "", ""],
+    ["TOTAL", totalItems.toString(), `$${totalLow}`, `$${totalHigh}`],
+  ];
+  const csv = rows.map((r) => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `restauready-budget-${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function BudgetPage() {
@@ -41,7 +84,6 @@ export default function BudgetPage() {
 
   if (!mounted) return null;
 
-  // Calculate totals
   const grouped = items.reduce(
     (acc, item) => {
       if (!acc[item.categorySlug]) acc[item.categorySlug] = [];
@@ -53,26 +95,34 @@ export default function BudgetPage() {
 
   let totalLow = 0;
   let totalHigh = 0;
+  let unparseableCount = 0;
 
   const categoryBreakdown = Object.entries(grouped).map(([slug, catItems]) => {
     let catLow = 0;
     let catHigh = 0;
+    let catUnparseable = 0;
     catItems.forEach((item) => {
-      const { low, high } = parsePriceRange(item.product.price);
-      catLow += low;
-      catHigh += high;
+      const { low, high, parseable } = parsePriceRange(item.product.price);
+      if (parseable) {
+        catLow += low;
+        catHigh += high;
+      } else {
+        catUnparseable++;
+      }
     });
     totalLow += catLow;
     totalHigh += catHigh;
+    unparseableCount += catUnparseable;
 
     const cat = getCategoryBySlug(slug);
     return {
       slug,
       name: cat?.name || slug,
-      icon: cat?.icon || "📦",
+      icon: cat?.icon || "box",
       itemCount: catItems.length,
       low: catLow,
       high: catHigh,
+      unparseable: catUnparseable,
     };
   });
 
@@ -95,7 +145,7 @@ export default function BudgetPage() {
 
       {items.length === 0 ? (
         <div className="bg-surface rounded-xl p-12 text-center">
-          <div className="text-4xl mb-4">💰</div>
+          <div className="text-4xl mb-4">money</div>
           <h2 className="text-xl font-semibold text-cream mb-2">
             No items saved yet
           </h2>
@@ -112,8 +162,19 @@ export default function BudgetPage() {
       ) : (
         <>
           {/* Total Summary */}
-          <div className="bg-surface rounded-xl p-6 mb-8">
-            <div className="text-sm text-cream/40 mb-2">Estimated Total</div>
+          <div className="bg-surface rounded-xl p-6 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-cream/40">Estimated Total</span>
+              {/* Export CSV (#10) */}
+              <button
+                onClick={() =>
+                  exportCSV(categoryBreakdown, totalLow, totalHigh, items.length)
+                }
+                className="text-xs text-cream/30 hover:text-amber border border-charcoal-lighter hover:border-amber/30 px-3 py-1.5 rounded-lg transition-all"
+              >
+                Export CSV
+              </button>
+            </div>
             <div className="text-3xl md:text-4xl font-bold text-amber">
               {formatCurrency(totalLow)}{" "}
               {totalLow !== totalHigh && (
@@ -127,6 +188,18 @@ export default function BudgetPage() {
               and bulk discounts.
             </div>
           </div>
+
+          {/* Unparseable warning (#2) */}
+          {unparseableCount > 0 && (
+            <div className="bg-amber/5 border border-amber/20 rounded-xl px-4 py-3 mb-6">
+              <p className="text-sm text-amber/70">
+                {unparseableCount} item{unparseableCount !== 1 ? "s" : ""}{" "}
+                {unparseableCount !== 1 ? "don't have" : "doesn't have"}{" "}
+                parseable prices (marked &ldquo;Call for quote&rdquo; or
+                missing). These are excluded from the totals above.
+              </p>
+            </div>
+          )}
 
           {/* Category Breakdown */}
           <div className="mb-6">
@@ -155,6 +228,11 @@ export default function BudgetPage() {
                           ({cat.itemCount} item
                           {cat.itemCount !== 1 ? "s" : ""})
                         </span>
+                        {cat.unparseable > 0 && (
+                          <span className="text-xs text-amber/50">
+                            ({cat.unparseable} no price)
+                          </span>
+                        )}
                       </div>
                       <span className="text-sm font-bold text-amber">
                         {formatCurrency(cat.low)}

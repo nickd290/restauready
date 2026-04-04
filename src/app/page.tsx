@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RestaurantProfile, CategoryProgress } from "@/types";
 import { getProfile } from "@/lib/profile";
-import { getProgress, getSavedItems } from "@/lib/saved";
+import { getProgress, getSavedItems, exportAllData } from "@/lib/saved";
 import { categories, departments } from "@/lib/categories";
 
 export default function Dashboard() {
@@ -118,6 +118,28 @@ export default function Dashboard() {
             );
           })}
         </div>
+      </div>
+
+      {/* Data Backup (#5) */}
+      <div className="mb-10">
+        <button
+          onClick={() => {
+            const data = exportAllData();
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `restauready-backup-${new Date().toISOString().split("T")[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          className="text-xs text-cream/30 hover:text-amber border border-charcoal-lighter hover:border-amber/30 px-3 py-2 rounded-lg transition-all"
+        >
+          Download Backup (JSON)
+        </button>
+        <span className="text-xs text-cream/20 ml-2">
+          Your data is only saved on this device
+        </span>
       </div>
 
       {/* Quick Actions */}

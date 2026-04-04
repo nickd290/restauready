@@ -2,11 +2,13 @@ import { NextRequest } from "next/server";
 import { Product, RestaurantProfile } from "@/types";
 
 export async function POST(request: NextRequest) {
-  const { categoryName, categoryDescription, profile } = (await request.json()) as {
-    categoryName: string;
-    categoryDescription: string;
-    profile: RestaurantProfile;
-  };
+  const { categoryName, categoryDescription, profile, page = 1 } =
+    (await request.json()) as {
+      categoryName: string;
+      categoryDescription: string;
+      profile: RestaurantProfile;
+      page?: number;
+    };
 
   const capacityLabel =
     profile.seatingCapacity === "small"
@@ -22,9 +24,15 @@ export async function POST(request: NextRequest) {
         ? "mid-range"
         : "premium/high-end";
 
+  const offset = (page - 1) * 10;
+  const pageContext =
+    page > 1
+      ? `\nThis is page ${page}. Return products ${offset + 1}-${offset + 10} — different from the first ${offset} products. Show NEW options not previously listed.`
+      : "";
+
   const prompt = `Find 10 specific commercial restaurant ${categoryName} products available for purchase online.
 Context: This is for "${profile.name}", a ${profile.cuisineType} restaurant with ${capacityLabel} capacity, ${profile.style} aesthetic, and a ${budgetLabel} budget.
-Category details: ${categoryDescription}
+Category details: ${categoryDescription}${pageContext}
 
 For each product, provide:
 1. Product name (specific brand and model)
@@ -54,13 +62,12 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no other text:
 }`;
 
   try {
-    // Use Perplexity API for web-grounded search
     const apiKey = process.env.PERPLEXITY_API_KEY;
 
     if (!apiKey) {
-      // Return mock data if no API key configured
       return Response.json({
         products: generateMockProducts(categoryName, profile),
+        isMock: true,
       });
     }
 
@@ -91,7 +98,6 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no other text:
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    // Parse JSON from the response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("No JSON found in response");
@@ -100,7 +106,7 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no other text:
     const parsed = JSON.parse(jsonMatch[0]);
     const products: Product[] = parsed.products.map(
       (p: Record<string, unknown>, i: number) => ({
-        id: `${categoryName.toLowerCase().replace(/\s+/g, "-")}-${i}-${Date.now()}`,
+        id: `${categoryName.toLowerCase().replace(/\s+/g, "-")}-${i}-${Date.now()}-p${page}`,
         name: p.name as string,
         price: p.price as string,
         retailer: p.retailer as string,
@@ -112,12 +118,12 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no other text:
       })
     );
 
-    return Response.json({ products });
+    return Response.json({ products, isMock: false });
   } catch (error) {
     console.error("Search error:", error);
-    // Fallback to mock data on error
     return Response.json({
       products: generateMockProducts(categoryName, profile),
+      isMock: true,
     });
   }
 }

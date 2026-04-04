@@ -54,11 +54,41 @@ export default function SavedPage() {
           <span className="text-cream">Your </span>
           <span className="text-amber">Shortlist</span>
         </h1>
-        <p className="text-cream/50 mt-2">
-          {items.length} item{items.length !== 1 ? "s" : ""} saved across{" "}
-          {categoryKeys.length} categor
-          {categoryKeys.length !== 1 ? "ies" : "y"}
-        </p>
+        <div className="flex items-center gap-4 mt-2">
+          <p className="text-cream/50">
+            {items.length} item{items.length !== 1 ? "s" : ""} across{" "}
+            {categoryKeys.length} categor
+            {categoryKeys.length !== 1 ? "ies" : "y"}
+          </p>
+          {items.length > 0 && (() => {
+            let low = 0;
+            let high = 0;
+            items.forEach((item) => {
+              const nums = item.product.price.match(/[\d,]+\.?\d*/g);
+              if (nums) {
+                const parsed = nums.map((n) => parseFloat(n.replace(/,/g, "")));
+                const valid = parsed.filter((n) => !isNaN(n) && n > 0);
+                if (valid.length > 0) {
+                  low += Math.min(...valid);
+                  high += Math.max(...valid);
+                }
+              }
+            });
+            if (low === 0 && high === 0) return null;
+            const fmt = (n: number) =>
+              new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                minimumFractionDigits: 0,
+              }).format(n);
+            return (
+              <span className="text-sm text-amber font-medium">
+                Est. {fmt(low)}
+                {low !== high && <span className="text-cream/30"> &ndash; {fmt(high)}</span>}
+              </span>
+            );
+          })()}
+        </div>
       </div>
 
       {items.length === 0 ? (
