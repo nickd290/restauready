@@ -63,6 +63,7 @@ export default function CategoryPage({
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [retailerFilter, setRetailerFilter] = useState<string>("all");
   const [priceFilter, setPriceFilter] = useState<string>("all");
+  const [resolvedImages, setResolvedImages] = useState<Record<string, string>>({});
 
   const category = getCategoryBySlug(slug);
   const neighbors = getNeighborCategories(slug);
@@ -139,6 +140,8 @@ export default function CategoryPage({
         setCacheTime(Date.now());
         setPage(pageNum);
         setCategoryProgress(slug, "in-progress");
+        // Resolve real product images from retailer pages
+        resolveProductImages(pageNum === 1 ? data.products : [...products, ...data.products]);
       } catch (err) {
         setError("Failed to load products. Try refreshing.");
         console.error(err);
@@ -218,6 +221,24 @@ export default function CategoryPage({
     } finally {
       setCompareLoading(false);
     }
+  }
+
+  function resolveProductImages(productList: Product[]) {
+    productList.forEach((product) => {
+      if (resolvedImages[product.id]) return; // already resolved
+      // Try to extract real image from the product page
+      const params = new URLSearchParams();
+      if (product.url && product.url !== "#") params.set("url", product.url);
+      params.set("name", product.name);
+      fetch(`/api/product-image?${params.toString()}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.imageUrl) {
+            setResolvedImages((prev) => ({ ...prev, [product.id]: data.imageUrl }));
+          }
+        })
+        .catch(() => {});
+    });
   }
 
   if (!mounted || !category) return null;
@@ -481,9 +502,10 @@ export default function CategoryPage({
                 return true;
               })
               .map((product, idx) => {
-              const imgSrc = product.imageUrl || getProductImageFallback(product.name);
+              const imgSrc = resolvedImages[product.id] || product.imageUrl || getProductImageFallback(product.name);
+              const hasRealImage = !!(resolvedImages[product.id] || product.imageUrl);
               const retailerInfo = getRetailerInfo(product.retailer);
-              const isFallbackImage = !product.imageUrl;
+              const isFallbackImage = !hasRealImage;
 
               if (viewMode === "list") {
                 return (
