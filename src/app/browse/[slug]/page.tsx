@@ -20,6 +20,7 @@ import {
   getNeighborCategories,
   getRelatedCategories,
 } from "@/lib/categories";
+import { getCategoryImage, getProductImageFallback } from "@/lib/images";
 
 function timeAgo(timestamp: number): string {
   const diff = Date.now() - timestamp;
@@ -218,50 +219,58 @@ export default function CategoryPage({
         </div>
       )}
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-ivory/40 mb-6">
-        <Link href="/browse" className="hover:text-ivory transition-colors">
-          Browse
-        </Link>
-        <span>/</span>
-        <span className="text-ivory/60">{category.name}</span>
-      </div>
-
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">{category.icon}</span>
-            <h1 className="text-2xl md:text-3xl font-bold text-ivory">
-              {category.name}
-            </h1>
-          </div>
-          <p className="text-ivory/50">{category.description}</p>
-          {profile && (
-            <p className="text-xs text-ivory/30 mt-2">
-              Showing results for: {profile.cuisineType} &middot;{" "}
-              {profile.style} &middot;{" "}
-              {profile.budgetTier === "budget"
-                ? "Budget"
-                : profile.budgetTier === "midrange"
-                  ? "Mid-Range"
-                  : "Premium"}
-            </p>
-          )}
+      {/* Hero Banner */}
+      <div className="relative rounded-2xl overflow-hidden mb-8 animate-fade-up">
+        <div className="absolute inset-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={getCategoryImage(slug)}
+            alt={category.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/20" />
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleRefresh}
-            className="text-sm text-ivory/40 hover:text-ivory border border-ink-lighter/20 hover:border-cream/30 rounded-lg px-3 py-2 transition-all"
-          >
-            Refresh
-          </button>
-          <button
-            onClick={markDone}
-            className="text-sm bg-green-900/40 text-green-400 hover:bg-green-900/60 rounded-lg px-3 py-2 transition-all"
-          >
-            Mark Done
-          </button>
+        <div className="relative px-6 md:px-8 pt-16 pb-6">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-xs text-ivory/50 mb-4">
+            <Link href="/browse" className="hover:text-ivory transition-colors">Browse</Link>
+            <span>/</span>
+            <span>{category.department}</span>
+            <span>/</span>
+            <span className="text-ivory/70">{category.name}</span>
+          </div>
+
+          <div className="flex items-end justify-between">
+            <div>
+              <h1
+                className="text-3xl md:text-4xl tracking-tight mb-2"
+                style={{ fontFamily: "var(--font-dm-serif)" }}
+              >
+                <span className="text-ivory">{category.icon} {category.name}</span>
+              </h1>
+              <p className="text-ivory/50 text-sm max-w-lg">{category.description}</p>
+              {profile && (
+                <p className="text-[10px] text-ivory/30 mt-2 tracking-wide">
+                  Tailored for {profile.cuisineType} &middot; {profile.style} &middot;{" "}
+                  {profile.budgetTier === "budget" ? "Budget" : profile.budgetTier === "midrange" ? "Mid-Range" : "Premium"}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleRefresh}
+                className="text-xs text-ivory/40 hover:text-ivory bg-ink/50 hover:bg-ink/70 backdrop-blur-sm border border-ivory/10 rounded-xl px-3 py-2 transition-all"
+              >
+                Refresh
+              </button>
+              <button
+                onClick={markDone}
+                className="text-xs bg-emerald-900/50 text-emerald-400 hover:bg-emerald-900/70 backdrop-blur-sm border border-emerald-500/20 rounded-xl px-3 py-2 transition-all"
+              >
+                Mark Done
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -333,105 +342,115 @@ export default function CategoryPage({
         </div>
       )}
 
-      {/* Products Grid (#11 visual hierarchy + #12 mobile save) */}
+      {/* Products Grid — image-first cards */}
       {!loading && !error && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="bg-surface border border-ink-lighter/20 rounded-2xl p-5 hover:border-ink-lighter/20/80 transition-all"
-              >
-                {/* Save button row — mobile friendly (#12) */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-copper">
-                      {product.price}
-                    </span>
-                    <span className="text-xs text-ivory/30">
-                      via {product.retailer}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => toggleSave(product)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      savedIds.has(product.id)
-                        ? "bg-copper/20 text-copper"
-                        : "bg-ink-lighter/50 text-ivory/40 hover:bg-ink-lighter hover:text-ivory"
-                    }`}
-                  >
-                    {savedIds.has(product.id) ? "Saved" : "Save"}
-                  </button>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {products.map((product, idx) => {
+              const imgSrc = product.imageUrl || getProductImageFallback(product.name);
+              return (
+                <div
+                  key={product.id}
+                  className={`animate-scale-in delay-${Math.min(idx + 1, 8)} bg-surface border border-ink-lighter/15 rounded-2xl overflow-hidden hover-lift group`}
+                >
+                  {/* Product image */}
+                  <div className="relative aspect-[4/3] bg-ink-lighter/30 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imgSrc}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getCategoryImage(slug);
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
 
-                {/* Product name — larger (#11) */}
-                <h3 className="text-base font-bold text-ivory leading-snug mb-2">
-                  {product.name}
-                </h3>
-
-                <p className="text-sm text-ivory/45 mb-3 line-clamp-2">
-                  {product.description}
-                </p>
-
-                {product.fitReason && (
-                  <div className="bg-copper/5 border border-amber/10 rounded-lg p-3 mb-3">
-                    <p className="text-xs text-copper/80">
-                      <span className="font-semibold">Why this fits:</span>{" "}
-                      {product.fitReason}
-                    </p>
-                  </div>
-                )}
-
-                {product.specs.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {product.specs.map((spec, i) => (
-                      <span
-                        key={i}
-                        className="text-xs bg-ink-lighter/50 text-ivory/50 px-2 py-1 rounded-full"
-                      >
-                        {spec}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Link with validation (#4) */}
-                {product.url && product.url !== "#" && (
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={product.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-copper hover:text-copper-light transition-colors"
-                      onMouseEnter={() => validateUrl(product.url)}
+                    {/* Save button overlay */}
+                    <button
+                      onClick={() => toggleSave(product)}
+                      className={`absolute top-3 right-3 px-3 py-1.5 rounded-xl text-xs font-bold backdrop-blur-md transition-all ${
+                        savedIds.has(product.id)
+                          ? "bg-copper/90 text-ink"
+                          : "bg-ink/60 text-ivory/80 hover:bg-ink/80 border border-ivory/10"
+                      }`}
                     >
-                      View on {product.retailer}
-                      <svg
-                        className="w-3.5 h-3.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                      {savedIds.has(product.id) ? "Saved" : "Save"}
+                    </button>
+
+                    {/* Price badge overlay */}
+                    <div className="absolute bottom-3 left-3">
+                      <span
+                        className="text-lg font-bold text-ivory drop-shadow-lg"
+                        style={{ fontFamily: "var(--font-dm-serif)" }}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                        />
-                      </svg>
-                    </a>
-                    {validatedUrls[product.url] === true && (
-                      <span className="text-xs text-green-400">Verified</span>
-                    )}
-                    {validatedUrls[product.url] === false && (
-                      <span className="text-xs text-red-400">
-                        Link may be broken
+                        {product.price}
                       </span>
+                    </div>
+                  </div>
+
+                  {/* Product details */}
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] font-bold tracking-wider uppercase text-copper/60">
+                        {product.retailer}
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm font-bold text-ivory leading-snug mb-2 line-clamp-2">
+                      {product.name}
+                    </h3>
+
+                    <p className="text-xs text-ivory/35 mb-3 line-clamp-2">
+                      {product.description}
+                    </p>
+
+                    {product.fitReason && (
+                      <div className="bg-copper/5 border border-copper/10 rounded-xl p-2.5 mb-3">
+                        <p className="text-[10px] text-copper/70 leading-relaxed">
+                          <span className="font-bold">Why this fits: </span>
+                          {product.fitReason}
+                        </p>
+                      </div>
+                    )}
+
+                    {product.specs.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {product.specs.slice(0, 3).map((spec, i) => (
+                          <span
+                            key={i}
+                            className="text-[10px] bg-ink-lighter/40 text-ivory/40 px-2 py-0.5 rounded-full"
+                          >
+                            {spec}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {product.url && product.url !== "#" && (
+                      <a
+                        href={product.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-copper hover:text-copper-light transition-colors"
+                        onMouseEnter={() => validateUrl(product.url)}
+                      >
+                        Shop on {product.retailer}
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                        </svg>
+                        {validatedUrls[product.url] === true && (
+                          <span className="text-emerald-400 text-[9px]">Verified</span>
+                        )}
+                        {validatedUrls[product.url] === false && (
+                          <span className="text-red-400 text-[9px]">May be broken</span>
+                        )}
+                      </a>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
 
           {/* Load More (#3) */}

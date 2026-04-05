@@ -7,6 +7,7 @@ import { CategoryProgress } from "@/types";
 import { getProfile } from "@/lib/profile";
 import { getProgress, getSavedByCategory } from "@/lib/saved";
 import { categories, departments } from "@/lib/categories";
+import { getCategoryImage } from "@/lib/images";
 
 export default function BrowsePage() {
   const router = useRouter();
@@ -122,48 +123,48 @@ function CategoryCard({
   return (
     <Link
       href={`/browse/${cat.slug}`}
-      className={`animate-scale-in delay-${Math.min(delay + 1, 8)} bg-surface border border-ink-lighter/20 hover:border-copper/30 rounded-2xl p-4 md:p-5 transition-all group hover-lift`}
+      className={`animate-scale-in delay-${Math.min(delay + 1, 8)} bg-surface border border-ink-lighter/15 rounded-2xl overflow-hidden transition-all group hover-lift`}
     >
-      <div className="flex items-start gap-3">
-        <span className="text-2xl">{cat.icon}</span>
-        <div className="flex-1 min-w-0">
-          <div className="font-semibold text-sm text-ivory group-hover:text-copper transition-colors">
-            {cat.name}
-          </div>
-          <div className="text-xs text-ivory/30 mt-1 line-clamp-1">
-            {cat.description}
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            {status === "done" && (
-              <span className="text-[10px] font-bold tracking-wider uppercase bg-emerald-900/40 text-emerald-400 px-2 py-0.5 rounded-full">
-                Done
-              </span>
-            )}
-            {status === "in-progress" && (
-              <span className="text-[10px] font-bold tracking-wider uppercase bg-copper/15 text-copper px-2 py-0.5 rounded-full">
-                Active
-              </span>
-            )}
-            {savedCount > 0 && (
-              <span className="text-[10px] text-ivory/25">
-                {savedCount} saved
-              </span>
-            )}
-          </div>
+      {/* Category thumbnail */}
+      <div className="relative h-28 overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={getCategoryImage(cat.slug)}
+          alt={cat.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent" />
+        <div className="absolute bottom-2 left-3 flex items-center gap-2">
+          {status === "done" && (
+            <span className="text-[9px] font-bold tracking-wider uppercase bg-emerald-500/90 text-ink px-2 py-0.5 rounded-full">
+              Done
+            </span>
+          )}
+          {status === "in-progress" && (
+            <span className="text-[9px] font-bold tracking-wider uppercase bg-copper/90 text-ink px-2 py-0.5 rounded-full">
+              Active
+            </span>
+          )}
         </div>
-        <svg
-          className="w-4 h-4 text-ivory/10 group-hover:text-copper/60 transition-colors shrink-0 mt-1"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
-          />
-        </svg>
+      </div>
+      {/* Card content */}
+      <div className="p-3.5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="font-bold text-sm text-ivory group-hover:text-copper transition-colors">
+              {cat.icon} {cat.name}
+            </div>
+            <div className="text-[11px] text-ivory/30 mt-1 line-clamp-1">
+              {cat.description}
+            </div>
+          </div>
+          <svg className="w-4 h-4 text-ivory/10 group-hover:text-copper/50 transition-colors shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+          </svg>
+        </div>
+        {savedCount > 0 && (
+          <div className="text-[10px] text-ivory/20 mt-2">{savedCount} saved</div>
+        )}
       </div>
     </Link>
   );

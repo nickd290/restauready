@@ -40,9 +40,10 @@ For each product, provide:
 2. Approximate price or price range
 3. Retailer name (WebstaurantStore, Amazon, Katom, Restaurant Depot, Wayfair, etc.)
 4. Direct URL to purchase (must be a real, working product page URL)
-5. A brief description (1-2 sentences)
-6. Why it fits this restaurant's profile
-7. Key specs (2-3 bullet points: dimensions, material, capacity, etc.)
+5. A direct image URL of the product (the actual product photo from the retailer page — must be a real .jpg or .png URL, NOT a page URL)
+6. A brief description (1-2 sentences)
+7. Why it fits this restaurant's profile
+8. Key specs (2-3 bullet points: dimensions, material, capacity, etc.)
 
 Focus on products that match the ${profile.style} aesthetic and ${budgetLabel} price point.
 Return products from multiple retailers for price comparison.
@@ -55,6 +56,7 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no other text:
       "price": "$XX - $XX",
       "retailer": "Retailer Name",
       "url": "https://...",
+      "imageUrl": "https://...jpg",
       "description": "Brief description",
       "fitReason": "Why it fits this restaurant",
       "specs": ["Spec 1", "Spec 2", "Spec 3"]
@@ -112,7 +114,7 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no other text:
         price: p.price as string,
         retailer: p.retailer as string,
         url: p.url as string,
-        imageUrl: "",
+        imageUrl: (p.imageUrl as string) || "",
         description: p.description as string,
         fitReason: p.fitReason as string,
         specs: (p.specs as string[]) || [],
