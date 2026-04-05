@@ -35,15 +35,15 @@ export async function POST(request: NextRequest) {
 Context: This is for "${profile.name}", a ${profile.cuisineType} restaurant with ${capacityLabel} capacity, ${profile.style} aesthetic, and a ${budgetLabel} budget.
 Category details: ${categoryDescription}${pageContext}${styleContext}
 
-For each product, provide:
-1. Product name (specific brand and model)
-2. Approximate price or price range
+For each product, provide ALL of these fields — none can be empty:
+1. Product name (specific brand and model — e.g. "Flash Furniture?"  not just "restaurant chair")
+2. Approximate price or price range (e.g. "$249" or "$199 - $349")
 3. Retailer name (WebstaurantStore, Amazon, Katom, Restaurant Depot, Wayfair, etc.)
-4. Direct URL to purchase (must be a real, working product page URL)
-5. A direct image URL of the product (the actual product photo from the retailer page — must be a real .jpg or .png URL, NOT a page URL)
-6. A brief description (1-2 sentences)
-7. Why it fits this restaurant's profile
-8. Key specs (2-3 bullet points: dimensions, material, capacity, etc.)
+4. Direct URL to the product page on the retailer site
+5. CRITICAL — imageUrl: The ACTUAL product image URL (the .jpg/.png/.webp URL of the product photo from the retailer's CDN or image server). This is NOT optional. Look at the retailer's product page and find the main product image src URL. Example format: "https://www.webstaurantstore.com/images/products/extra_large/12345.jpg" or "https://m.media-amazon.com/images/I/xxxxx.jpg"
+6. A brief description (1-2 sentences focusing on look, material, and feel)
+7. Why it specifically fits this restaurant's aesthetic and concept
+8. Key specs (3 bullet points: dimensions, material/finish, weight capacity or key feature)
 
 Focus on products that match the ${profile.style} aesthetic and ${budgetLabel} price point.
 Return products from multiple retailers for price comparison.

@@ -21,6 +21,7 @@ import {
   getRelatedCategories,
 } from "@/lib/categories";
 import { getCategoryImage, getProductImageFallback } from "@/lib/images";
+import { getRetailerInfo } from "@/lib/retailers";
 
 function timeAgo(timestamp: number): string {
   const diff = Date.now() - timestamp;
@@ -59,6 +60,9 @@ export default function CategoryPage({
     savingsVsHighest?: string;
   } | null>(null);
   const [compareLoading, setCompareLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [retailerFilter, setRetailerFilter] = useState<string>("all");
+  const [priceFilter, setPriceFilter] = useState<string>("all");
 
   const category = getCategoryBySlug(slug);
   const neighbors = getNeighborCategories(slug);
@@ -372,19 +376,184 @@ export default function CategoryPage({
         </div>
       )}
 
-      {/* Products Grid — image-first cards */}
+      {/* Filter bar + View toggle + Products */}
       {!loading && !error && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {products.map((product, idx) => {
+          {/* Filters + View toggle */}
+          {products.length > 0 && (() => {
+            const uniqueRetailers = [...new Set(products.map((p) => p.retailer))];
+            const prices = products.map((p) => {
+              const nums = p.price.match(/[\d,]+\.?\d*/g);
+              return nums ? Math.min(...nums.map((n) => parseFloat(n.replace(/,/g, "")))) : 0;
+            }).filter((n) => n > 0);
+            const hasLow = prices.some((p) => p < 200);
+            const hasMid = prices.some((p) => p >= 200 && p < 500);
+            const hasHigh = prices.some((p) => p >= 500);
+
+            return (
+              <div className="mb-5 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Retailer filters */}
+                    <button
+                      onClick={() => setRetailerFilter("all")}
+                      className={`text-[10px] font-semibold px-3 py-1.5 rounded-full transition-all ${
+                        retailerFilter === "all" ? "bg-copper text-ink" : "bg-surface text-ivory/40 hover:text-ivory border border-ink-lighter/20"
+                      }`}
+                    >
+                      All ({products.length})
+                    </button>
+                    {uniqueRetailers.map((r) => {
+                      const info = getRetailerInfo(r);
+                      const count = products.filter((p) => p.retailer === r).length;
+                      return (
+                        <button
+                          key={r}
+                          onClick={() => setRetailerFilter(retailerFilter === r ? "all" : r)}
+                          className={`text-[10px] font-semibold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
+                            retailerFilter === r ? "bg-copper text-ink" : "bg-surface text-ivory/40 hover:text-ivory border border-ink-lighter/20"
+                          }`}
+                        >
+                          {info && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={info.favicon} alt="" className="w-3.5 h-3.5 rounded-sm" />
+                          )}
+                          {info?.shortName || r} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* View toggle */}
+                  <div className="flex items-center gap-1 bg-surface rounded-xl p-1 shrink-0">
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={`p-1.5 rounded-lg transition-all ${viewMode === "grid" ? "bg-copper/20 text-copper" : "text-ivory/30"}`}
+                      title="Grid view"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 012.5 1h3A1.5 1.5 0 017 2.5v3A1.5 1.5 0 015.5 7h-3A1.5 1.5 0 011 5.5v-3zm8 0A1.5 1.5 0 0110.5 1h3A1.5 1.5 0 0115 2.5v3A1.5 1.5 0 0113.5 7h-3A1.5 1.5 0 019 5.5v-3zm-8 8A1.5 1.5 0 012.5 9h3A1.5 1.5 0 017 10.5v3A1.5 1.5 0 015.5 15h-3A1.5 1.5 0 011 13.5v-3zm8 0A1.5 1.5 0 0110.5 9h3a1.5 1.5 0 011.5 1.5v3a1.5 1.5 0 01-1.5 1.5h-3A1.5 1.5 0 019 13.5v-3z"/></svg>
+                    </button>
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={`p-1.5 rounded-lg transition-all ${viewMode === "list" ? "bg-copper/20 text-copper" : "text-ivory/30"}`}
+                      title="List view"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M2.5 12a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5z"/></svg>
+                    </button>
+                  </div>
+                </div>
+                {/* Price range filters */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {hasLow && (
+                    <button onClick={() => setPriceFilter(priceFilter === "low" ? "all" : "low")}
+                      className={`text-[10px] font-semibold px-3 py-1.5 rounded-full transition-all ${priceFilter === "low" ? "bg-copper text-ink" : "bg-surface text-ivory/40 hover:text-ivory border border-ink-lighter/20"}`}>
+                      Under $200
+                    </button>
+                  )}
+                  {hasMid && (
+                    <button onClick={() => setPriceFilter(priceFilter === "mid" ? "all" : "mid")}
+                      className={`text-[10px] font-semibold px-3 py-1.5 rounded-full transition-all ${priceFilter === "mid" ? "bg-copper text-ink" : "bg-surface text-ivory/40 hover:text-ivory border border-ink-lighter/20"}`}>
+                      $200 – $500
+                    </button>
+                  )}
+                  {hasHigh && (
+                    <button onClick={() => setPriceFilter(priceFilter === "high" ? "all" : "high")}
+                      className={`text-[10px] font-semibold px-3 py-1.5 rounded-full transition-all ${priceFilter === "high" ? "bg-copper text-ink" : "bg-surface text-ivory/40 hover:text-ivory border border-ink-lighter/20"}`}>
+                      $500+
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Product cards */}
+          <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" : "space-y-4"}>
+            {products
+              .filter((p) => retailerFilter === "all" || p.retailer === retailerFilter)
+              .filter((p) => {
+                if (priceFilter === "all") return true;
+                const nums = p.price.match(/[\d,]+\.?\d*/g);
+                if (!nums) return true;
+                const minPrice = Math.min(...nums.map((n) => parseFloat(n.replace(/,/g, ""))));
+                if (priceFilter === "low") return minPrice < 200;
+                if (priceFilter === "mid") return minPrice >= 200 && minPrice < 500;
+                if (priceFilter === "high") return minPrice >= 500;
+                return true;
+              })
+              .map((product, idx) => {
               const imgSrc = product.imageUrl || getProductImageFallback(product.name);
+              const retailerInfo = getRetailerInfo(product.retailer);
+              const isFallbackImage = !product.imageUrl;
+
+              if (viewMode === "list") {
+                return (
+                  <div
+                    key={product.id}
+                    className={`animate-scale-in delay-${Math.min(idx + 1, 8)} bg-surface border border-ink-lighter/15 rounded-2xl overflow-hidden hover-lift flex flex-col md:flex-row`}
+                  >
+                    {/* Large image — 40% width on desktop */}
+                    <div className="relative md:w-[40%] aspect-[3/2] md:aspect-auto bg-ink-lighter/30 overflow-hidden shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imgSrc} alt={product.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = getCategoryImage(slug); }} />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-ink/20 hidden md:block" />
+                      {isFallbackImage && (
+                        <div className="absolute bottom-2 left-2 bg-ink/70 backdrop-blur-sm text-ivory/40 text-[9px] px-2 py-0.5 rounded-full">
+                          Image unavailable
+                        </div>
+                      )}
+                      <button onClick={() => toggleSave(product)}
+                        className={`absolute top-3 right-3 px-3 py-1.5 rounded-xl text-xs font-bold backdrop-blur-md transition-all ${savedIds.has(product.id) ? "bg-copper/90 text-ink" : "bg-ink/60 text-ivory/80 hover:bg-ink/80 border border-ivory/10"}`}>
+                        {savedIds.has(product.id) ? "Saved" : "Save"}
+                      </button>
+                    </div>
+                    {/* Details — 60% width */}
+                    <div className="flex-1 p-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        {retailerInfo && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={retailerInfo.favicon} alt="" className="w-4 h-4 rounded-sm" />
+                        )}
+                        <span className="text-[10px] font-bold tracking-wider uppercase" style={{ color: retailerInfo?.color || "var(--color-copper)" }}>
+                          {retailerInfo?.shortName || product.retailer}
+                        </span>
+                        <span className="text-lg font-bold text-copper ml-auto" style={{ fontFamily: "var(--font-dm-serif)" }}>
+                          {product.price}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-bold text-ivory leading-snug mb-2">{product.name}</h3>
+                      <p className="text-xs text-ivory/40 mb-3">{product.description}</p>
+                      {product.fitReason && (
+                        <div className="bg-copper/5 border border-copper/10 rounded-xl p-2.5 mb-3">
+                          <p className="text-[10px] text-copper/70 leading-relaxed"><span className="font-bold">Why this fits: </span>{product.fitReason}</p>
+                        </div>
+                      )}
+                      {product.specs.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {product.specs.map((spec, i) => (<span key={i} className="text-[10px] bg-ink-lighter/40 text-ivory/40 px-2 py-0.5 rounded-full">{spec}</span>))}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        {product.url && product.url !== "#" && (
+                          <a href={product.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-copper hover:text-copper-light transition-colors">
+                            Shop on {product.retailer}
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" /></svg>
+                          </a>
+                        )}
+                        <button onClick={() => compareProduct(product)} className="text-[10px] font-semibold text-ivory/30 hover:text-copper border border-ink-lighter/20 hover:border-copper/30 px-2.5 py-1 rounded-lg transition-all">Compare Prices</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Grid view (default)
               return (
                 <div
                   key={product.id}
                   className={`animate-scale-in delay-${Math.min(idx + 1, 8)} bg-surface border border-ink-lighter/15 rounded-2xl overflow-hidden hover-lift group`}
                 >
-                  {/* Product image */}
-                  <div className="relative aspect-[4/3] bg-ink-lighter/30 overflow-hidden">
+                  {/* Product image — larger 3:2 aspect */}
+                  <div className="relative aspect-[3/2] bg-ink-lighter/30 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={imgSrc}
@@ -395,6 +564,13 @@ export default function CategoryPage({
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
+
+                    {/* Fallback label */}
+                    {isFallbackImage && (
+                      <div className="absolute top-3 left-3 bg-ink/70 backdrop-blur-sm text-ivory/40 text-[9px] px-2 py-0.5 rounded-full">
+                        Sample image
+                      </div>
+                    )}
 
                     {/* Save button overlay */}
                     <button
@@ -421,9 +597,14 @@ export default function CategoryPage({
 
                   {/* Product details */}
                   <div className="p-4">
+                    {/* Retailer badge with logo */}
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] font-bold tracking-wider uppercase text-copper/60">
-                        {product.retailer}
+                      {retailerInfo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={retailerInfo.favicon} alt="" className="w-3.5 h-3.5 rounded-sm" />
+                      )}
+                      <span className="text-[10px] font-bold tracking-wider uppercase" style={{ color: retailerInfo?.color || "var(--color-copper)" }}>
+                        {retailerInfo?.shortName || product.retailer}
                       </span>
                     </div>
 
