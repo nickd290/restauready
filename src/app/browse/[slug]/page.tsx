@@ -52,6 +52,13 @@ export default function CategoryPage({
   const [validatedUrls, setValidatedUrls] = useState<
     Record<string, boolean | null>
   >({});
+  const [comparing, setComparing] = useState<string | null>(null);
+  const [compareResults, setCompareResults] = useState<{
+    comparisons: { retailer: string; productName: string; price: string; url: string; isExactMatch: boolean; shipping: string; inStock: boolean }[];
+    lowestPrice?: string;
+    savingsVsHighest?: string;
+  } | null>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
 
   const category = getCategoryBySlug(slug);
   const neighbors = getNeighborCategories(slug);
@@ -184,6 +191,29 @@ export default function CategoryPage({
       .catch(() =>
         setValidatedUrls((prev) => ({ ...prev, [url]: false }))
       );
+  }
+
+  async function compareProduct(product: Product) {
+    setComparing(product.id);
+    setCompareResults(null);
+    setCompareLoading(true);
+    try {
+      const res = await fetch("/api/compare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productName: product.name,
+          categoryName: category?.name || "",
+          profile,
+        }),
+      });
+      const data = await res.json();
+      setCompareResults(data);
+    } catch {
+      setCompareResults({ comparisons: [] });
+    } finally {
+      setCompareLoading(false);
+    }
   }
 
   if (!mounted || !category) return null;
@@ -427,25 +457,107 @@ export default function CategoryPage({
                       </div>
                     )}
 
-                    {product.url && product.url !== "#" && (
-                      <a
-                        href={product.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-copper hover:text-copper-light transition-colors"
-                        onMouseEnter={() => validateUrl(product.url)}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {product.url && product.url !== "#" && (
+                        <a
+                          href={product.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-copper hover:text-copper-light transition-colors"
+                          onMouseEnter={() => validateUrl(product.url)}
+                        >
+                          Shop on {product.retailer}
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                          </svg>
+                        </a>
+                      )}
+                      <button
+                        onClick={() => compareProduct(product)}
+                        className="text-[10px] font-semibold text-ivory/30 hover:text-copper border border-ink-lighter/20 hover:border-copper/30 px-2.5 py-1 rounded-lg transition-all"
                       >
-                        Shop on {product.retailer}
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                        </svg>
-                        {validatedUrls[product.url] === true && (
-                          <span className="text-emerald-400 text-[9px]">Verified</span>
+                        Compare Prices
+                      </button>
+                    </div>
+
+                    {/* Price comparison panel */}
+                    {comparing === product.id && (
+                      <div className="mt-3 bg-ink/50 border border-ink-lighter/20 rounded-xl p-3">
+                        {compareLoading ? (
+                          <div className="flex items-center gap-2 text-xs text-ivory/30">
+                            <div className="w-3 h-3 border-2 border-copper/30 border-t-copper rounded-full animate-spin" />
+                            Searching retailers...
+                          </div>
+                        ) : compareResults && compareResults.comparisons.length > 0 ? (
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-bold tracking-wider uppercase text-copper/60">
+                                Price Comparison
+                              </span>
+                              {compareResults.savingsVsHighest && (
+                                <span className="text-[10px] font-bold text-emerald-400">
+                                  Save up to {compareResults.savingsVsHighest}
+                                </span>
+                              )}
+                            </div>
+                            <div className="space-y-1.5">
+                              {compareResults.comparisons.map((c, ci) => (
+                                <a
+                                  key={ci}
+                                  href={c.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-hover/50 hover:bg-surface-hover transition-colors group/comp"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span className="text-xs font-semibold text-ivory/60 group-hover/comp:text-ivory truncate">
+                                      {c.retailer}
+                                    </span>
+                                    {c.isExactMatch && (
+                                      <span className="text-[8px] bg-emerald-900/30 text-emerald-400 px-1.5 py-0.5 rounded-full shrink-0">
+                                        Exact
+                                      </span>
+                                    )}
+                                    {c.shipping && c.shipping !== "Varies" && (
+                                      <span className="text-[8px] text-ivory/20 shrink-0">
+                                        {c.shipping}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span
+                                    className={`text-xs font-bold shrink-0 ${
+                                      c.price === compareResults.lowestPrice
+                                        ? "text-emerald-400"
+                                        : "text-ivory/50"
+                                    }`}
+                                  >
+                                    {c.price}
+                                    {c.price === compareResults.lowestPrice && (
+                                      <span className="text-[8px] ml-1">Best</span>
+                                    )}
+                                  </span>
+                                </a>
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => { setComparing(null); setCompareResults(null); }}
+                              className="text-[10px] text-ivory/20 hover:text-ivory/40 mt-2"
+                            >
+                              Close
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-ivory/30">
+                            No price comparisons found for this product.
+                            <button
+                              onClick={() => { setComparing(null); setCompareResults(null); }}
+                              className="text-copper/50 hover:text-copper ml-2"
+                            >
+                              Close
+                            </button>
+                          </div>
                         )}
-                        {validatedUrls[product.url] === false && (
-                          <span className="text-red-400 text-[9px]">May be broken</span>
-                        )}
-                      </a>
+                      </div>
                     )}
                   </div>
                 </div>
