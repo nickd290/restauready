@@ -502,8 +502,10 @@ export default function CategoryPage({
                 return true;
               })
               .map((product, idx) => {
-              const imgSrc = resolvedImages[product.id] || product.imageUrl || getProductImageFallback(product.name);
-              const hasRealImage = !!(resolvedImages[product.id] || product.imageUrl);
+              // Never trust Perplexity's imageUrl — they're almost always 404s
+              // Use resolved images (from scraping the actual product page) or category fallback
+              const imgSrc = resolvedImages[product.id] || getCategoryImage(slug);
+              const hasRealImage = !!resolvedImages[product.id];
               const retailerInfo = getRetailerInfo(product.retailer);
               const isFallbackImage = !hasRealImage;
 
@@ -520,7 +522,7 @@ export default function CategoryPage({
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent to-ink/20 hidden md:block" />
                       {isFallbackImage && (
                         <div className="absolute bottom-2 left-2 bg-ink/70 backdrop-blur-sm text-ivory/40 text-[9px] px-2 py-0.5 rounded-full">
-                          Image unavailable
+                          {resolvedImages[product.id] === undefined ? "Loading..." : "Category image"}
                         </div>
                       )}
                       <button onClick={() => toggleSave(product)}
@@ -590,7 +592,7 @@ export default function CategoryPage({
                     {/* Fallback label */}
                     {isFallbackImage && (
                       <div className="absolute top-3 left-3 bg-ink/70 backdrop-blur-sm text-ivory/40 text-[9px] px-2 py-0.5 rounded-full">
-                        Sample image
+                        {resolvedImages[product.id] === undefined ? "Loading real image..." : "Category image"}
                       </div>
                     )}
 
